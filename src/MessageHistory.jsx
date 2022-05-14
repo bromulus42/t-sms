@@ -40,55 +40,29 @@ export const MessageHistory = () => {
   // const  [test, setTest] = useState()
 
   const [error, setError] = useState(false);
-  const [loading, setIsLoading] = useState(true);
+  const [loaded, setIsLoaded] = useState(false);
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     fetch("https://mockapi.twilio.com/messages")
       .then((res) => res.json())
-      .then((res) => {
-        setIsLoading(true);
-        return res;
-      })
       .then(
-        (result) => {
-          // console.log("RESULT: ", result);
-          // console.log("messages.length", result?.body?.messages?.length);
-          if (result?.body?.messages?.length > 0) {
-            // console.log("#### result", result);
-            setMessages(result.body.messages);
-          }
-
-          // setIsLoading(false);
-          setError(false);
-        },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
-        (error) => {
-          // console.log("error", error);
-          setError(true);
-          // setIsLoading(false);
-        }
+        ({ messages }) => setMessages(messages),
+        (error) => setError(true)
       )
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsLoaded(true));
   }, []);
 
   const Loading = () => {
-    return (
-      <div>
-        <p>loading</p>
-        <Spinner decorative={false} title="Loading" />
-      </div>
-    );
+    return <Spinner decorative={false} title="Loading" />;
   };
 
   const Error = () => {
     return (
       <div>
-        <p>error</p>
+        <p>Oops, something went wrong</p>
         <Button variant="secondary" onClick={() => {}}>
-          Secondary
+          Refresh Page
         </Button>
       </div>
     );
@@ -100,54 +74,47 @@ export const MessageHistory = () => {
         <THead>
           <Tr>
             <Th>SID</Th>
+            <Th>To/From</Th>
             <Th>Body</Th>
-            <Th>From</Th>
-            <Th>To</Th>
+            <Th>Status</Th>
           </Tr>
         </THead>
-        {/* {messages.forEach((message) =>
+        {messages.map((message) => (
           <Tr>
             <Td>
               <Text as="p">{message.sid}</Text>
             </Td>
             <Td>
-              <Text as="p">{message.body}</Text>
-            </Td>
-            <Td>
+              <Text as="p">{message.to}</Text>
               <Text as="p">{message.from}</Text>
             </Td>
             <Td>
-              <Text as="p">{message.to}</Text>
+              <Text as="p">{message.body}</Text>
+            </Td>
+            <Td>
+              <Text as="p">{message.status}</Text>
             </Td>
           </Tr>
-        } */}
+        ))}
       </Table>
     );
   };
-  /* {(loading) && (
-    <Loading />
- )}*/
-  /*
- return (
-   <div>
-    {messages.length > 0 && (
-      <Messaging />
-    )}
-   </div>
- )
- */
+
   const View = () => {
-    return <div>{messages.length > 0 && <MessagesTable />}</div>;
+    if (error) {
+      return <Error />;
+    } else if (!loaded) {
+      return <Loading />;
+    } else if (!!messages.length) {
+      console.log("messages");
+      return <MessagesTable />;
+    }
   };
 
-  // conditionally render
-  // if isLoading => LoadingTable w/spinner
-  // if isLoading = false && messages[].length => show Table w/messages
-  // if isError => show ErrorView
   return (
     <Box marginTop="space60">
       {" "}
-      <View />{" "}
+      <View />
     </Box>
   );
 };
